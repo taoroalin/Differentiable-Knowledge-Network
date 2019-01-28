@@ -44,6 +44,7 @@ def train_missing_link():
     heads = 2
 
     decoder = layers.Inferer(dimensions*2, heads)
+    decoder.cuda()
     optimizer = torch.optim.Adam(decoder.parameters())
     loss_fn = nn.MSELoss()
 
@@ -60,3 +61,5 @@ def train_missing_link():
         optimizer.step()
         outloss = float(loss.detach().cpu().numpy())
         print("Loss: {0:f5} Batch: {1}".format(outloss, i))
+
+train_missing_link()

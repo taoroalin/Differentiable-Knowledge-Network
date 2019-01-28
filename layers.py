@@ -24,10 +24,8 @@ class Inferer(nn.Module):
         self.synthesizer = nn.Linear(dimensions*(slots+1), dimensions)
         self.revealer = nn.Linear(dimensions, 1)
         
-        self.heads = nn.Parameter(torch.zeros(slots, dimensions))
-        torch.nn.init.xavier_uniform_(self.heads)
-        self.objective = nn.Parameter(torch.zeros(dimensions))
-        nn.init.xavier_uniform_(self.objective)
+        self.heads = nn.Parameter(torch.rempty(slots, dimensions).uniform(-0.8, 0.8)))
+        self.objective = nn.Parameter(torch.empty(dimensions).uniform_(-0.8, 0.8))
         self.state = nn.Parameter(torch.zeros(dimensions))
 
     def forward(self, memory):
@@ -37,8 +35,8 @@ class Inferer(nn.Module):
         rspace = torch.tanh(rspace)
         self.heads = SubspaceSimilarityAccess(self.heads, qspace, rspace, memory)
         self.state = self.synthesizer(torch.cat(self.state, self.heads.flatten()))
-        self.reveal = torch.sigmoid(self.revealer(self.state))
-        return self.state*revealer
+        reveal = torch.sigmoid(self.revealer(self.state))
+        return self.state*reveal
 
 
 class Encoder(nn.Module):
@@ -49,7 +47,7 @@ class Encoder(nn.Module):
         #self.attention = nn.Linear(dimensions*2, dimensions)
         #self.filterer = nn.Linear(dimensions*2, dimensions)
 
-    def forward(self, inpt, memory)
+    def forward(self, inpt, memory):
         k = self.initial(inpt)
         return torch.cat(memory, k, axis=0)
 
