@@ -24,17 +24,17 @@ class Inferer(nn.Module):
         self.synthesizer = nn.Linear(dimensions*(slots+1), dimensions)
         self.revealer = nn.Linear(dimensions, 1)
         
-        self.heads = nn.Parameter(torch.rempty(slots, dimensions).uniform(-0.8, 0.8)))
+        self.heads = nn.Parameter(torch.empty(slots, dimensions).uniform_(-0.8, 0.8))
         self.objective = nn.Parameter(torch.empty(dimensions).uniform_(-0.8, 0.8))
         self.state = nn.Parameter(torch.zeros(dimensions))
 
     def forward(self, memory):
-        qspace = self.querior(torch.cat(self.state.unsqueeze(0).expand(self.slots, self.dimensions), self.heads, 1))
+        qspace = self.querior(torch.cat([self.state.unsqueeze(0).expand(self.slots, self.dimensions), self.heads], 1))
         qspace = torch.tanh(qspace)
-        rspace = self.querior(torch.cat(self.state.unsqueeze(0).expand(self.slots, self.dimensions), self.heads, 1))
+        rspace = self.querior(torch.cat([self.state.unsqueeze(0).expand(self.slots, self.dimensions), self.heads], 1))
         rspace = torch.tanh(rspace)
         self.heads = SubspaceSimilarityAccess(self.heads, qspace, rspace, memory)
-        self.state = self.synthesizer(torch.cat(self.state, self.heads.flatten()))
+        self.state = self.synthesizer(torch.cat([self.state, self.heads.flatten()]))
         reveal = torch.sigmoid(self.revealer(self.state))
         return self.state*reveal
 
@@ -49,7 +49,7 @@ class Encoder(nn.Module):
 
     def forward(self, inpt, memory):
         k = self.initial(inpt)
-        return torch.cat(memory, k, axis=0)
+        return torch.cat([memory, k], axis=0)
 
 
 class Compressor(nn.Module):

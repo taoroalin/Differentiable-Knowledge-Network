@@ -11,18 +11,18 @@ def missing_link_generator(batch_size, nodes, dimensions):
     while True:
         yield missing_link(batch_size, nodes, dimensions)
 
-def missing_link(samples, nodes, dimensions):
-    connections = nodes*(nodes-1) - 1
-    samples = np.zeros((samples, connections, nodes*2))
-    targets = np.zeros((samples, dimensions*2))
-    for sample in range(samples):
-        skip=random.randint(0, nodes-1)
-        nodes = [np.random.uniform(-1, 1, dimensions) for _ in range(nodes)]
+def missing_link(num_samples, num_nodes, dimensions):
+    connections = num_nodes*(num_nodes-1) - 1
+    samples = np.zeros((num_samples, connections, dimensions*2))
+    targets = np.zeros((num_samples, dimensions*2))
+    for sample in range(num_samples):
+        skip=random.randint(0, num_nodes-1)
+        nodes = [np.random.uniform(-1, 1, dimensions) for _ in range(num_nodes)]
         i=0
         skipped=False
-        for comb in itertools.combinations(nodes):
+        for comb in itertools.combinations(nodes, 2):
             if i!=skip and not skipped:
-                connections[sample, i] = np.concatenate(comb)
+                samples[sample, i] = np.concatenate(comb)
                 i+=1
             else:
                 targets[sample]=np.concatenate(comb)
@@ -52,8 +52,8 @@ def train_missing_link():
     batch_size = 1000
 
     for i, (x, y)in enumerate(missing_link_generator(batch_size, nodes, dimensions)):
-        cuda_x = torch.from_numpy(x).cuda()
-        cuda_y = torch.from_numpy(y).cuda()
+        cuda_x = torch.from_numpy(x).float().cuda()
+        cuda_y = torch.from_numpy(y).float().cuda()
         pred = decoder(cuda_x)
         loss = loss_fn(pred, cuda_y)
         optimizer.zero_grad()
